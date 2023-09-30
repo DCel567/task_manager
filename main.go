@@ -7,12 +7,6 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-// type model struct {
-// 	choices  []string
-// 	cursor   int
-// 	selected map[int]struct{}
-// }
-
 type model struct {
 	choices  []string
 	cursor   int
@@ -23,7 +17,6 @@ func initialModel(variants []string) model {
 	return model{
 		choices:  variants,
 		selected: make(map[int]bool, len(variants)),
-		//selected: make(map[int]struct{}),
 	}
 }
 
