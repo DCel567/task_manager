@@ -1,29 +1,77 @@
 package main
 
-type state interface {
-	Init() state
+import (
+	"fmt"
+
+	tea "github.com/charmbracelet/bubbletea"
+)
+
+type model struct {
+	choices  []string
+	cursor   int
+	selected map[int]bool
 }
 
-type hello_state struct {
-	buttons []string
-	cursor  int
-}
-
-type set_task_state struct {
-	buttons []string
-	cursor  int
-}
-
-func (h hello_state) Init() state {
-	return hello_state{
-		buttons: []string{"Set task", "Statistics", "Quit"},
-		cursor:  0,
+func InitialModel(variants []string) model {
+	return model{
+		choices:  variants,
+		selected: make(map[int]bool, len(variants)),
 	}
 }
 
-func (st set_task_state) Init() state {
-	return set_task_state{
-		buttons: []string{"Python", "C++", "Go", "Quit"},
-		cursor:  0,
+func (m model) Init() tea.Cmd {
+	return nil
+}
+
+func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	switch msg := msg.(type) {
+
+	case tea.KeyMsg:
+		switch msg.String() {
+
+		case "ctrl+c", "q":
+			return m, tea.Quit
+
+		case "up", "k":
+			m.cursor--
+			if m.cursor < 0 {
+				m.cursor = len(m.choices) - 1
+			}
+
+		case "down", "j":
+			m.cursor = (m.cursor + 1) % len(m.choices)
+
+		case "enter", " ":
+			res := m.selected[m.cursor]
+			if res {
+				m.selected[m.cursor] = false
+			} else {
+				m.selected[m.cursor] = true
+			}
+		}
 	}
+
+	return m, nil
+}
+
+func (m model) View() string {
+	s := "What should we buy at the market?\n\n"
+
+	for i, choice := range m.choices {
+		cursor := " " //no cursor
+		if m.cursor == i {
+			cursor = ">" //cursor
+		}
+
+		checked := " " //not selected
+		if res := m.selected[i]; res {
+			checked = "x" //selected
+		}
+
+		s += fmt.Sprintf("%s [%s] %s\n", cursor, checked, choice)
+	}
+
+	s += "\nPress q to quit.\n"
+
+	return s
 }
